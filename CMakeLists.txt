@@ -7,9 +7,6 @@ include_directories(.)
 
 add_executable(concurrent_linked_list
         main.c
-        LinkedListWithMutex.c
-        LinkedListWithMutex.h
-        SerialLinkedList.c
-        SerialLinkedList.h
-        LinkedListWithReadWriteLocks.c
-        LinkedListWithReadWriteLocks.h)
+        LinkedList.c
+        LinkedList.h
+        )

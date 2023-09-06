@@ -5,3 +5,6 @@ CMakeCache.txt
 cmake_install.cmake
 Makefile
 concurrent_linked_list
+concurrent_linked_list.cbp
+Testing
+.cmake
