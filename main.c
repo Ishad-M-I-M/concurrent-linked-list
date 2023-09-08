@@ -86,3 +86,11 @@ unsigned int* getUniqueRandomNumbers(unsigned int n) {
 void serialLikedListOperations(){
 
 }
+
+void linkedListWithMutexOperations(){
+
+}
+
+void linkedListWithReadWriteLockOperations(){
+    
+}
