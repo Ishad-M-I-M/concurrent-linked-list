@@ -1,26 +1,24 @@
 # Linked List Implementations
 
-Executing the program
-* To build the project executable run 
+Implementations of a linked list as a:
+a) Serial program
+b) Parallel program (based on Pthreads) with one mutex for the entire linked list
+c) Parallel program (based on Pthreads) with read-write locks for the entire linked list
+
+How to compile and run the programs:
+* linked_list.c
 ```shell
-cmake .
+gcc -o linked_list linked_list.c
+./linked_list
 ```
-and then run
-```shell
-make
+
+According to the case the following can be changed:
+```c
+int n = 1000;    // number of elements initially in linked list
+int m = 10000;    // number of random operations count
+
+float m_member = 0.50;    // fraction of member operations from m
+float m_insert = 0.25;    // fraction of insert operations from m
+float m_delete = 0.25;    // fraction of delete operations from m
 ```
-> This will generate an executable named `concurrent-linked-list`.
-* To run the program
-```shell
-./concurrent-linked-list <option> <n> <m> <m_member> <m_insert> <m_delete>
-```
-> - `option` - To specify the linked list type to be used. Accepted values:
->   * `1` - Serial program.
->   * `2` - Parallel program (based on Pthreads) with one mutex for the entire linked list.
->   * `3` - Parallel program (based on Pthreads) with read-write locks for the entire linked list.
-> 
-> - `n` - Number of elements to be in initially populated linked list.
-> - `m` - Number of random operations to be carried out.
-> - `m_member` - Fraction of member operations in `m` random operations.
-> - `m_insert` - Fraction of insert operations in `m` random operations.
-> - `m_delete` - Fraction of delete operations in `m` random operations.
+
