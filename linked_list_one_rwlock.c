@@ -7,7 +7,7 @@
 const int MAX_KEY = 65536;
 
 struct node {
-    int val;
+    int data;
     struct node *next;
 };
 
@@ -27,7 +27,7 @@ double start_time, finish_time, time_elapsed;
 
 int member_count, insert_count, delete_count;
 
-pthread_mutex_t mutex;
+pthread_rwlock_t rwlock;
 pthread_mutex_t count_mutex;
 
 int member(int value);
@@ -59,8 +59,8 @@ int main() {
         pthread_t *thread_handles;
 
         thread_handles = malloc(thread_count * sizeof(pthread_t));
-        pthread_mutex_init(&mutex, NULL);
         pthread_mutex_init(&count_mutex, NULL);
+        pthread_rwlock_init(&rwlock, NULL);
 
         start_time = clock();
         for (i = 0; i < thread_count; i++)
@@ -76,11 +76,10 @@ int main() {
         time_arr[j] = time_elapsed;
 
         clearMemory();
-        pthread_mutex_destroy(&mutex);
+        pthread_rwlock_destroy(&rwlock);
         pthread_mutex_destroy(&count_mutex);
         free(thread_handles);
     }
-
     double avg = average(time_arr, iterations);
     double std = standardDeviation(time_arr, iterations);
     printf("Average : %f\nStandard Deviation: %f\n", avg, std);
@@ -89,82 +88,98 @@ int main() {
     return 0;
 }
 
+//member Function
 int member(int value) {
     struct node *temp;
 
     temp = head;
-    while (temp != NULL && temp->val < value)
+    while (temp != NULL && temp->data < value)
         temp = temp->next;
 
-    if (temp == NULL || temp->val > value) {
+    if (temp == NULL || temp->data > value) {
+        //printf("%d is a member in linked-list\n", value);
         return 0;
     } else {
+        //printf("%d is a member in linked-list\n", val
         return 1;
     }
 }
 
+// insert function
 int insert(int value) {
     struct node *current = head;
-    struct node *previous = NULL;
+    struct node *pred = NULL;
     struct node *temp;
     int return_value = 1;
 
-    while (current != NULL && current->val < value) {
-        previous = current;
+    while (current != NULL && current->data < value) {
+        pred = current;
         current = current->next;
     }
 
-    if (current == NULL || current->val > value) {
+    if (current == NULL || current->data > value) {
         temp = malloc(sizeof(struct node));
-        temp->val = value;
+        temp->data = value;
         temp->next = current;
-        if (previous == NULL)
+        if (pred == NULL)
             head = temp;
         else
-            previous->next = temp;
+            pred->next = temp;
     } else {
         return_value = 0;
     }
-
     return return_value;
 }
 
+//delete Function
 int delete(int value) {
     struct node *current = head;
-    struct node *previous = NULL;
+    struct node *pred = NULL;
     int return_value = 1;
 
-    while (current != NULL && current->val < value) {
-        previous = current;
+    while (current != NULL && current->data < value) {
+        pred = current;
         current = current->next;
     }
 
-    if (current != NULL && current->val == value) {
-        if (previous == NULL) {
+    if (current != NULL && current->data == value) {
+        if (pred == NULL) {
             head = current->next;
             free(current);
         } else {
-            previous->next = current->next;
+            pred->next = current->next;
             free(current);
         }
     } else {
         return_value = 0;
+        //printf("%d is not in the linked-list\n", value);
     }
+
     return return_value;
 }
 
+//Function to free memory used for linked-list
 void clearMemory(void) {
-    struct node *current;
+    struct node *currentent;
     struct node *next;
 
-    current = head;
-    next = current->next;
+    if (Is_Empty()) return;
+    currentent = head;
+    next = currentent->next;
     while (next != NULL) {
-        free(current);
-        current = next;
-        next = current->next;
+        free(currentent);
+        currentent = next;
+        next = currentent->next;
     }
-    free(current);
+    free(currentent);
+}
+
+//Function to check if linked-list is empty
+int Is_Empty(void) {
+    if (head == NULL)
+        return 1;
+    else
+        return 0;
 }
 
 void *threadFunction(void *rank) {
@@ -177,23 +192,23 @@ void *threadFunction(void *rank) {
     int ops_per_thread = m / thread_count;
 
     for (i = 0; i < ops_per_thread; i++) {
-        float operation_choice = (rand() % 10000 / 10000);
+        float operation_choice = (rand() % 10000 / 10000.0);
         val = rand() % MAX_KEY;
 
         if (operation_choice < m_member) {
-            pthread_mutex_lock(&mutex);
+            pthread_rwlock_rdlock(&rwlock);
             member(val);
-            pthread_mutex_unlock(&mutex);
+            pthread_rwlock_unlock(&rwlock);
             my_member++;
         } else if (operation_choice < m_member + m_insert) {
-            pthread_mutex_lock(&mutex);
+            pthread_rwlock_wrlock(&rwlock);
             insert(val);
-            pthread_mutex_unlock(&mutex);
+            pthread_rwlock_unlock(&rwlock);
             my_insert++;
         } else {
-            pthread_mutex_lock(&mutex);
+            pthread_rwlock_wrlock(&rwlock);
             delete(val);
-            pthread_mutex_unlock(&mutex);
+            pthread_rwlock_unlock(&rwlock);
             my_delete++;
         }
     }
@@ -205,4 +220,3 @@ void *threadFunction(void *rank) {
     pthread_mutex_unlock(&count_mutex);
     return NULL;
 }
-

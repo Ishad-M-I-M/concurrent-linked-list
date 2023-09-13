@@ -18,7 +18,13 @@ gcc -o linked_list_one_mutex linked_list_one_mutex.c -lm -pthread
 ./linked_list_one_mutex
 ```
 
-According to the case the following can be changed:
+* linked_list_one_rwlock.c
+```shell
+gcc -o linked_list_one_mutex linked_list_one_mutex.c -lm -pthread
+./linked_list_one_mutex
+```
+
+According to the cases the following need to be changed:
 ```c
 int n = 1000;    // number of elements initially in linked list
 int m = 10000;    // number of random operations count
