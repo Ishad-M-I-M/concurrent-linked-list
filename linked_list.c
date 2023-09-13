@@ -21,9 +21,9 @@ int iterations = 385; // number of samples need to provide 95% confidence level
 int n = 1000;    // number of elements initially in linked list
 int m = 10000;    // number of random operations count
 
-float m_member = 0.50;    // fraction of member operations from m
-float m_insert = 0.25;    // fraction of insert operations from m
-float m_delete = 0.25;    // fraction of delete operations from m
+float m_member = 0.99;    // fraction of member operations from m
+float m_insert = 0.005;    // fraction of insert operations from m
+float m_delete = 0.005;    // fraction of delete operations from m
 
 float operation;
 double start_time, finish_time, time_elapsed;
