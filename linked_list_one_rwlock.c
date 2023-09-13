@@ -192,15 +192,15 @@ void *threadFunction(void *rank) {
     int ops_per_thread = m / thread_count;
 
     for (i = 0; i < ops_per_thread; i++) {
-        float operation_choice = (rand() % 10000 / 10000.0);
+        float operation = (rand() % 10000 / 10000.0);
         val = rand() % MAX_KEY;
 
-        if (operation_choice < m_member) {
+        if (operation < m_member) {
             pthread_rwlock_rdlock(&rwlock);
             member(val);
             pthread_rwlock_unlock(&rwlock);
             my_member++;
-        } else if (operation_choice < m_member + m_insert) {
+        } else if (operation < m_member + m_insert) {
             pthread_rwlock_wrlock(&rwlock);
             insert(val);
             pthread_rwlock_unlock(&rwlock);

@@ -1,9 +1,9 @@
 # Linked List Implementations
 
 Implementations of a linked list as a:
-a) Serial program - [linked_list.c](linked_list.c)
-b) Parallel program (based on Pthreads) with one mutex for the entire linked list - [linked_list_one_mutex.c](linked_list_one_mutex.c)
-c) Parallel program (based on Pthreads) with read-write locks for the entire linked list - [linked_list_one_rwlock.c](linked_list_one_rwlock.c)
+ - a) Serial program - [linked_list.c](linked_list.c)
+ - b) Parallel program (based on Pthreads) with one mutex for the entire linked list - [linked_list_one_mutex.c](linked_list_one_mutex.c)
+ - c) Parallel program (based on Pthreads) with read-write locks for the entire linked list - [linked_list_one_rwlock.c](linked_list_one_rwlock.c)
 
 How to compile and run the programs:
 * linked_list.c
@@ -20,7 +20,7 @@ gcc -o linked_list_one_mutex linked_list_one_mutex.c -lm -pthread
 
 * linked_list_one_rwlock.c
 ```shell
-gcc -o linked_list_one_mutex linked_list_one_mutex.c -lm -pthread
+gcc -o linked_list_one_rwlock linked_list_one_rwlock.c -lm -pthread
 ./linked_list_one_mutex
 ```
 
