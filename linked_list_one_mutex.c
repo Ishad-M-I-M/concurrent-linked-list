@@ -33,6 +33,7 @@ int thread_count = 1;    // number of threads
 double start_time, finish_time, time_elapsed;
 
 int member_count, insert_count, delete_count;
+int member_count_per_thread, insert_count_per_thread, delete_count_per_thread;
 
 pthread_mutex_t mutex;
 
@@ -54,6 +55,10 @@ int main() {
         insert_count = m_insert * m;
         delete_count = m_delete * m;
 
+        member_count_per_thread = member_count/thread_count;
+        insert_count_per_thread = insert_count/thread_count;
+        delete_count_per_thread = delete_count/thread_count;
+
         int i = 0;
         while (i < n) {
             int r = rand() % 65536;
@@ -73,17 +78,22 @@ int main() {
             struct thread_data* data = malloc(sizeof(struct thread_data));
             data->i = i;
             if (i == thread_count -1){
+                // Remaining operations are allocated to the last thread.
+                // Can have few more operations than other threads if the number of operations is not divisible.
                 data->member_count = member_count;
                 data->insert_count = insert_count;
                 data->delete_count = delete_count;
             } else {
-                member_count -= member_count/thread_count;
-                data->member_count = member_count/thread_count;
-                insert_count -= insert_count/thread_count;
-                data->insert_count = insert_count/thread_count;
-                delete_count -= delete_count/thread_count;
-                data->delete_count = delete_count/thread_count;
+                member_count -= member_count_per_thread;
+                data->member_count = member_count_per_thread;
+                insert_count -= insert_count_per_thread;
+                data->insert_count = insert_count_per_thread;
+                delete_count -= delete_count_per_thread;
+                data->delete_count = delete_count_per_thread;
             }
+
+//            printf("Allocated number of operations [Thread %i]\nMember : %i\nInsert : %i\nDelete : %i\n",
+//                   data->i, data->member_count, data->insert_count, data->delete_count);
             data_arr[i] = data;
             pthread_create(&thread_handles[i], NULL, threadFunction, (void *) data_arr[i]);
         }
