@@ -6,11 +6,6 @@
 
 const int MAX_KEY = 65536;
 
-struct node {
-    int val;
-    struct node *next;
-};
-
 struct thread_data {
     int i; // thread number
     int member_count;   // number of member operations in thread
@@ -37,14 +32,6 @@ int member_count_per_thread, insert_count_per_thread, delete_count_per_thread;
 
 pthread_mutex_t mutex;
 
-int member(int value);
-
-int insert(int value);
-
-int delete(int value);
-
-void clearMemory(void);
-
 void *threadFunction(void *rank);
 
 int main() {
@@ -62,7 +49,7 @@ int main() {
         int i = 0;
         while (i < n) {
             int r = rand() % 65536;
-            if (insert(r)) {
+            if (insert(r, &head)) {
                 i++;
             }
         }
@@ -107,7 +94,7 @@ int main() {
 
         time_arr[j] = time_elapsed;
 
-        clearMemory();
+        clearMemory(&head);
         pthread_mutex_destroy(&mutex);
         free(thread_handles);
     }
@@ -120,84 +107,6 @@ int main() {
     return 0;
 }
 
-int member(int value) {
-    struct node *temp;
-
-    temp = head;
-    while (temp != NULL && temp->val < value)
-        temp = temp->next;
-
-    if (temp == NULL || temp->val > value) {
-        return 0;
-    } else {
-        return 1;
-    }
-}
-
-int insert(int value) {
-    struct node *current = head;
-    struct node *previous = NULL;
-    struct node *temp;
-    int return_value = 1;
-
-    while (current != NULL && current->val < value) {
-        previous = current;
-        current = current->next;
-    }
-
-    if (current == NULL || current->val > value) {
-        temp = malloc(sizeof(struct node));
-        temp->val = value;
-        temp->next = current;
-        if (previous == NULL)
-            head = temp;
-        else
-            previous->next = temp;
-    } else {
-        return_value = 0;
-    }
-
-    return return_value;
-}
-
-int delete(int value) {
-    struct node *current = head;
-    struct node *previous = NULL;
-    int return_value = 1;
-
-    while (current != NULL && current->val < value) {
-        previous = current;
-        current = current->next;
-    }
-
-    if (current != NULL && current->val == value) {
-        if (previous == NULL) {
-            head = current->next;
-            free(current);
-        } else {
-            previous->next = current->next;
-            free(current);
-        }
-    } else {
-        return_value = 0;
-    }
-    return return_value;
-}
-
-void clearMemory(void) {
-    struct node *current;
-    struct node *next;
-
-    current = head;
-    next = current->next;
-    while (next != NULL) {
-        free(current);
-        current = next;
-        next = current->next;
-    }
-    free(current);
-}
-
 void *threadFunction(void *data) {
     int i, val;
 
@@ -206,23 +115,23 @@ void *threadFunction(void *data) {
     int my_insert = my_data->insert_count;
     int my_delete = my_data->delete_count;
 
-    for (i = 0; i < my_member + my_insert + my_delete; i++) {
+    for (i = 0; i < my_data->member_count + my_data->insert_count + my_data->delete_count; i++) {
         float operation = rand()%3;
         val = rand() % MAX_KEY;
 
         if (operation == 0 && my_member > 0) {
             pthread_mutex_lock(&mutex);
-            member(val);
+            member(val, head);
             pthread_mutex_unlock(&mutex);
             my_member--;
         } else if (operation == 1 && my_insert > 0) {
             pthread_mutex_lock(&mutex);
-            insert(val);
+            insert(val, &head);
             pthread_mutex_unlock(&mutex);
             my_insert--;
         } else if (operation == 2 && my_delete > 0) {
             pthread_mutex_lock(&mutex);
-            delete(val);
+            delete(val, &head);
             pthread_mutex_unlock(&mutex);
             my_delete--;
         } else {

@@ -6,11 +6,6 @@
 
 const int MAX_KEY = 65536;
 
-struct node {
-    int data;
-    struct node *next;
-};
-
 struct thread_data {
     int i; // thread number
     int member_count;   // number of member operations in thread
@@ -37,14 +32,6 @@ int member_count_per_thread, insert_count_per_thread, delete_count_per_thread;
 
 pthread_rwlock_t rwlock;
 
-int member(int value);
-
-int insert(int value);
-
-int delete(int value);
-
-void clearMemory(void);
-
 void *threadFunction(void *rank);
 
 int main() {
@@ -62,7 +49,7 @@ int main() {
         int i = 0;
         while (i < n) {
             int r = rand() % 65536;
-            if (insert(r)) {
+            if (insert(r, &head)) {
                 i++;
             }
         }
@@ -108,7 +95,7 @@ int main() {
 
         time_arr[j] = time_elapsed;
 
-        clearMemory();
+        clearMemory(&head);
         pthread_rwlock_destroy(&rwlock);
         free(thread_handles);
     }
@@ -120,91 +107,6 @@ int main() {
     return 0;
 }
 
-//member Function
-int member(int value) {
-    struct node *temp;
-
-    temp = head;
-    while (temp != NULL && temp->data < value)
-        temp = temp->next;
-
-    if (temp == NULL || temp->data > value) {
-        //printf("%d is a member in linked-list\n", value);
-        return 0;
-    } else {
-        //printf("%d is a member in linked-list\n", val
-        return 1;
-    }
-}
-
-// insert function
-int insert(int value) {
-    struct node *current = head;
-    struct node *pred = NULL;
-    struct node *temp;
-    int return_value = 1;
-
-    while (current != NULL && current->data < value) {
-        pred = current;
-        current = current->next;
-    }
-
-    if (current == NULL || current->data > value) {
-        temp = malloc(sizeof(struct node));
-        temp->data = value;
-        temp->next = current;
-        if (pred == NULL)
-            head = temp;
-        else
-            pred->next = temp;
-    } else {
-        return_value = 0;
-    }
-    return return_value;
-}
-
-//delete Function
-int delete(int value) {
-    struct node *current = head;
-    struct node *pred = NULL;
-    int return_value = 1;
-
-    while (current != NULL && current->data < value) {
-        pred = current;
-        current = current->next;
-    }
-
-    if (current != NULL && current->data == value) {
-        if (pred == NULL) {
-            head = current->next;
-            free(current);
-        } else {
-            pred->next = current->next;
-            free(current);
-        }
-    } else {
-        return_value = 0;
-        //printf("%d is not in the linked-list\n", value);
-    }
-
-    return return_value;
-}
-
-//Function to free memory used for linked-list
-void clearMemory(void) {
-    struct node *currentent;
-    struct node *next;
-
-    currentent = head;
-    next = currentent->next;
-    while (next != NULL) {
-        free(currentent);
-        currentent = next;
-        next = currentent->next;
-    }
-    free(currentent);
-}
-
 
 void *threadFunction(void *data) {
     int i, val;
@@ -214,23 +116,23 @@ void *threadFunction(void *data) {
     int my_insert = my_data->insert_count;
     int my_delete = my_data->delete_count;
 
-    for (i = 0; i < my_member + my_insert + my_delete; i++) {
+    for (i = 0; i < my_data->member_count + my_data->insert_count + my_data->delete_count; i++) {
         float operation = rand()%3;
         val = rand() % MAX_KEY;
 
         if (operation == 0 && my_member > 0) {
             pthread_rwlock_rdlock(&rwlock);
-            member(val);
+            member(val, head);
             pthread_rwlock_unlock(&rwlock);
             my_member--;
         } else if (operation == 1 && my_insert > 0) {
             pthread_rwlock_wrlock(&rwlock);
-            insert(val);
+            insert(val, &head);
             pthread_rwlock_unlock(&rwlock);
             my_insert--;
         } else if (operation == 2 && my_delete > 0) {
             pthread_rwlock_wrlock(&rwlock);
-            delete(val);
+            delete(val, &head);
             pthread_rwlock_unlock(&rwlock);
             my_delete--;
         } else {

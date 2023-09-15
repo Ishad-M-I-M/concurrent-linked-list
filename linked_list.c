@@ -6,19 +6,6 @@
 
 const int MAX_KEY = 65536;
 
-struct node {
-    int val;
-    struct node *next;
-};
-
-int member(int value, struct node *head);
-
-int insert(int value, struct node **head);
-
-int delete(int value, struct node **head);
-
-void clearMemory(struct node **head);
-
 int iterations = 1000; // number of samples need to provide 95% confidence level
 int n = 1000;    // number of elements initially in linked list
 int m = 10000;    // number of random operations count
@@ -76,83 +63,5 @@ int main(void) {
     printf("Average : %f\nStandard Deviation: %f\n", avg, std);
 
     return 0;
-}
-
-
-int member(int value, struct node *head) {
-    struct node *current;
-    current = head;
-    while (current != NULL && current->val < value)
-        current = current->next;
-
-    if (current == NULL || current->val > value) {
-        return 0;
-    } else {
-        return 1;
-    }
-}
-
-int insert(int value, struct node **headp) {
-    struct node *current = *headp;
-    struct node *previous = NULL;
-    struct node *temp;
-
-    while (current != NULL && current->val < value) {
-        previous = current;
-        current = current->next;
-    }
-
-    if (current == NULL || current->val > value) {
-        temp = malloc(sizeof(struct node));
-        temp->val = value;
-        temp->next = current;
-        if (previous == NULL) {
-            *headp = temp;
-        } else {
-            previous->next = temp;
-        }
-        return 1;
-    } else {
-        return 0;
-    }
-}
-
-int delete(int value, struct node **headp) {
-    struct node *current = *headp;
-    struct node *previous = NULL;
-
-    while (current != NULL && current->val < value) {
-        previous = current;
-        current = current->next;
-    }
-
-    if (current != NULL && current->val == value) {
-        if (previous == NULL) {
-            *headp = current->next;
-            free(current);
-        } else {
-            previous->next = current->next;
-            free(current);
-        }
-        return 1;
-    } else {
-        return 0;
-    }
-}
-
-
-void clearMemory(struct node **headp) {
-    struct node *current;
-    struct node *next;
-
-    current = *headp;
-    next = current->next;
-    while (next != NULL) {
-        free(current);
-        current = next;
-        next = current->next;
-    }
-    free(current);
-    *headp = NULL;
 }
 
